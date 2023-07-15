@@ -11,7 +11,7 @@ import networkx as nx
 from collections import Counter
 
 app = Flask(__name__)
-
+nltk.download('stopwords')
 def read_article(file_name):
     with open(file_name, "r", encoding="utf-8") as file:
         filedata = file.readlines()
