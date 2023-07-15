@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VIMOWEB</title>
+    <link rel="icon" href="https://img.icons8.com/metro/480/v.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@500&display=swap" rel="stylesheet">
+    <style>
+        body{
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background-color:black;
+            font-family: 'Ubuntu', sans-serif;
+        }
+        /* Chat container styles */
+        .chat-container {
+            width: 90%;
+            max-width: 2000px;
+            height: 90vh;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #202020;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        /* Scrollable div styles */
+        .chat-history {
+            width: 95%;
+            max-width: 2000px;
+            height: 80vh;
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 1rem;
+            margin-top: 10px;
+            border-radius: 5px;
+            background-color: #333;
+        }
+        
+        .inputMethod {
+            width: 95%;
+            max-width: 2000px;
+            height: fit-content;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+        }
+        
+        /* Input box and button styles */
+        .user-input {
+            margin: 0.5rem;
+            width: 90%;
+            padding: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-weight: bolder;
+            caret-color: orangered;
+            outline: none;
+            background-color: lavender;
+        }
+        
+        .send-button {
+            margin: 0.5rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-weight: bolder;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* User and AI message styles */
+        .user-message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: bolder;
+            background-color: #202020;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        
+        .user-message .avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height:40px;
+            margin-right: 10px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ai-message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: bolder;
+            background-color: #202020;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            letter-spacing:1px;
+            line-height:20px;
+        }
+        
+        .ai-message .avatar {
+            width: 40px;
+            min-width:40px;
+            height: 40px;
+            min-height:40px;
+            margin-right: 10px;
+            border-radius: 50%;
+            background-color: #f44336;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Custom scrollbar styles */
+        .chat-history::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .chat-history::-webkit-scrollbar-track {
+            background-color: #202020;
+        }
+        
+        .chat-history::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            /* Styles for tablets and mobile phones */
+            .chat-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-history" id="chatHistory">
+            <!-- Questions and answers will be dynamically inserted here -->
+        </div>
+        <form method="post" class="inputMethod">
+            <input type="text" name="query" class="user-input" id="userInput" placeholder="Type your question here">
+            <button type="submit" class="send-button">send</button>
+        </form>
+    </div>
+    <script>
+        var sb = document.querySelector('.send-button');
+        sb.addEventListener("click", function(event) {
+            event.preventDefault(); // Prevent the default form submission behavior
+            sendMessage();
+        });
+
+        function sendMessage() {
+            var userInput = document.querySelector(".user-input");
+            var chatHistory = document.getElementById('chatHistory');
+            // Create new elements for the user and AI messages
+            var userMessage = document.createElement('div');
+            userMessage.className = 'user-message';
+            var userAvatar = document.createElement('div');
+            userAvatar.className = 'avatar';
+            userAvatar.textContent = 'U';
+            var userText = document.createElement('p');
+            userText.textContent = userInput.value;
+            
+            var aiMessage = document.createElement('div');
+            aiMessage.className = 'ai-message';
+            var aiAvatar = document.createElement('div');
+            aiAvatar.className = 'avatar';
+            aiAvatar.textContent = 'AI';
+            var aiText = document.createElement('p');
+            aiText.textContent = 'Loading...'; // Show a loading message
+            
+            // Append the user message and AI message elements to the chat history div
+            userMessage.appendChild(userAvatar);
+            userMessage.appendChild(userText);
+            chatHistory.appendChild(userMessage);
+            
+            aiMessage.appendChild(aiAvatar);
+            aiMessage.appendChild(aiText);
+            chatHistory.appendChild(aiMessage);
+            
+            // Scroll to the bottom of the chat history
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+
+            // Make an AJAX request to the Flask backend to retrieve the summary
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    var summary = data.summary;
+                    aiText.textContent = summary;
+                    userInput.value = "";
+                }
+            };
+            xhr.send('query=' + encodeURIComponent(userInput.value));
+        }
+    </script>
+</body>
+  </html>
